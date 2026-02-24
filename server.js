@@ -12,7 +12,9 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
   .catch((err) => console.log("MongoDB Connection Error ❌", err));
 
-// ✅ Student Schema
+// ==========================
+// ✅ STUDENT MODEL
+// ==========================
 const studentSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -26,15 +28,39 @@ const studentSchema = new mongoose.Schema({
 
 const Student = mongoose.model("Student", studentSchema);
 
-// ✅ Home Route
+// ==========================
+// ✅ QUESTION MODEL
+// ==========================
+const Question = require("./models/Question");
+
+// ==========================
+// ✅ HOME ROUTE
+// ==========================
 app.get("/", (req, res) => {
   res.send("Backend Running Successfully 🚀");
 });
 
-// ✅ Save Student Data to MongoDB
+// ==========================
+// ✅ GET 30 RANDOM QUESTIONS
+// ==========================
+app.get("/questions", async (req, res) => {
+  try {
+    const questions = await Question.aggregate([
+      { $sample: { size: 30 } }
+    ]);
+
+    res.json(questions);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+});
+
+// ==========================
+// ✅ SAVE STUDENT DATA
+// ==========================
 app.post("/save", async (req, res) => {
   try {
-    console.log("Received Data:", req.body); // 👈 ADD THIS
+    console.log("Received Data:", req.body);
     const newStudent = new Student(req.body);
     await newStudent.save();
     res.status(200).json({ message: "Data saved to MongoDB ✅" });
